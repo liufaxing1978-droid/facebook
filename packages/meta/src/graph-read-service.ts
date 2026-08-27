@@ -36,25 +36,30 @@ export class GraphMetaReadService implements MetaReadService {
     );
   }
 
-  listCampaigns(_adAccountId: string): Promise<MetaCampaign[]> {
+  listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
+    void adAccountId;
     return Promise.reject(
       new MetaClientError("META_API_ERROR", "Campaign reads are not available in P1 Task 3")
     );
   }
 
-  listAdSets(_campaignId: string): Promise<MetaAdSet[]> {
+  listAdSets(campaignId: string): Promise<MetaAdSet[]> {
+    void campaignId;
     return Promise.reject(
       new MetaClientError("META_API_ERROR", "Ad Set reads are not available in P1 Task 3")
     );
   }
 
-  listAds(_adSetId: string): Promise<MetaAd[]> {
+  listAds(adSetId: string): Promise<MetaAd[]> {
+    void adSetId;
     return Promise.reject(
       new MetaClientError("META_API_ERROR", "Ad reads are not available in P1 Task 3")
     );
   }
 
-  readInsights(_scope: MetaInsightScope, _range: MetaDateRange): Promise<MetaInsightRow[]> {
+  readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
+    void scope;
+    void range;
     return Promise.reject(
       new MetaClientError("META_API_ERROR", "Insight reads are not available in P1 Task 3")
     );
