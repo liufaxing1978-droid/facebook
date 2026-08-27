@@ -35,6 +35,8 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
+      - run: pnpm exec prisma generate
+      - run: pnpm exec prisma migrate deploy
       - run: pnpm test:unit
       - run: pnpm test:integration
       - run: pnpm lint
