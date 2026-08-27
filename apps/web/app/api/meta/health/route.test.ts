@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MetaClientError } from "../../../../../../packages/meta/src/errors";
-import { createMetaHealthHandler } from "./route";
+import { createMetaHealthHandler } from "./handler";
 
 describe("GET /api/meta/health", () => {
   it("returns only sanitized connected identity metadata", async () => {
