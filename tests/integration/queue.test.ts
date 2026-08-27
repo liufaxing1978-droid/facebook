@@ -25,6 +25,6 @@ describe("queue baseline", () => {
 
     expect(first.id).toBe(operationId);
     expect(second.id).toBe(operationId);
-    expect((await queue.getJobs(["waiting"])).filter((job) => job.id === operationId)).toHaveLength(1);
+    expect((await queue.getWaiting()).filter((job) => job.id === operationId)).toHaveLength(1);
   });
 });

@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test:unit": "vitest run --exclude tests/integration/**",
+    "test:unit": "vitest run --exclude 'tests/integration/**'",
     "test:integration": "vitest run tests/integration",
     "build": "turbo run build"
   },
