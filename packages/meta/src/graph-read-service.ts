@@ -4,6 +4,7 @@ import {
   parseMetaAdAccount,
   parseMetaAdSet,
   parseMetaCampaign,
+  parseMetaInsightRow,
   type MetaAd,
   type MetaAdAccount,
   type MetaAdSet,
@@ -69,12 +70,21 @@ export class GraphMetaReadService implements MetaReadService {
     return result;
   }
 
-  readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
-    void scope;
-    void range;
-    return Promise.reject(
-      new MetaClientError("META_API_ERROR", "Insight reads are not available in P1 Task 3")
+  async readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
+    const id = this.requireParentId(scope.id, "Insight scope");
+    const since = this.requireDate(range.since, "Insight since");
+    const until = this.requireDate(range.until, "Insight until");
+    const result = await this.readCollection(
+      `${id}/insights`,
+      {
+        fields: "date_start,date_stop,spend,impressions,reach,clicks,ctr,cpc,cpm",
+        level: scope.level,
+        time_range: JSON.stringify({ since, until }),
+        limit: "500"
+      },
+      parseMetaInsightRow
     );
+    return result;
   }
 
   private requireParentId(value: string, label: string): string {
@@ -83,6 +93,13 @@ export class GraphMetaReadService implements MetaReadService {
       throw new MetaClientError("META_API_ERROR", `${label} id must be non-empty`);
     }
     return id;
+  }
+
+  private requireDate(value: string, label: string): string {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      throw new MetaClientError("META_API_ERROR", `${label} must use YYYY-MM-DD format`);
+    }
+    return value;
   }
 
   private async readCollection<T>(
