@@ -39,31 +39,34 @@ export class GraphMetaReadService implements MetaReadService {
     );
   }
 
-  listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
+  async listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
     const id = this.requireParentId(adAccountId, "Ad Account");
-    return this.readCollection(
+    const result = await this.readCollection(
       `${id}/campaigns`,
       { fields: "id,name,objective,status,effective_status" },
       parseMetaCampaign
     );
+    return result;
   }
 
-  listAdSets(campaignId: string): Promise<MetaAdSet[]> {
+  async listAdSets(campaignId: string): Promise<MetaAdSet[]> {
     const id = this.requireParentId(campaignId, "Campaign");
-    return this.readCollection(
+    const result = await this.readCollection(
       `${id}/adsets`,
       { fields: "id,campaign_id,name,status,effective_status,daily_budget,lifetime_budget" },
       parseMetaAdSet
     );
+    return result;
   }
 
-  listAds(adSetId: string): Promise<MetaAd[]> {
+  async listAds(adSetId: string): Promise<MetaAd[]> {
     const id = this.requireParentId(adSetId, "Ad Set");
-    return this.readCollection(
+    const result = await this.readCollection(
       `${id}/ads`,
       { fields: "id,adset_id,name,status,effective_status,creative{id}" },
       parseMetaAd
     );
+    return result;
   }
 
   readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
