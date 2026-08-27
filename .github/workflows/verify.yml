@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "feat/p0-engineering-baseline"
+      - "feat/p1-meta-readonly"
   pull_request:
     branches:
       - main
