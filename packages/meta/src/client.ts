@@ -30,6 +30,23 @@ export class MetaClient {
 
   async request<T>(path: string, options: MetaRequestOptions = {}): Promise<T> {
     const url = this.buildUrl(path, options.query);
+    return this.requestAbsolute<T>(url, options);
+  }
+
+  async requestUrl<T>(url: URL): Promise<T> {
+    if (url.protocol !== "https:" || url.hostname !== "graph.facebook.com") {
+      throw new MetaClientError(
+        "META_API_ERROR",
+        "Meta Graph pagination URL must use https://graph.facebook.com"
+      );
+    }
+
+    const safeUrl = new URL(url.toString());
+    safeUrl.searchParams.set("access_token", this.accessToken);
+    return this.requestAbsolute<T>(safeUrl, { method: "GET" });
+  }
+
+  private async requestAbsolute<T>(url: URL, options: MetaRequestOptions): Promise<T> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
