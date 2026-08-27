@@ -12,26 +12,27 @@ export type FakeMetaFixtures = Readonly<{
 export class FakeMetaService implements MetaReadService {
   constructor(private readonly fixtures: FakeMetaFixtures) {}
 
-  async listAdAccounts(): Promise<MetaAdAccount[]> {
-    return [...this.fixtures.adAccounts];
+  listAdAccounts(): Promise<MetaAdAccount[]> {
+    return Promise.resolve([...this.fixtures.adAccounts]);
   }
 
-  async listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
-    return [...(this.fixtures.campaignsByAdAccount[adAccountId] ?? [])];
+  listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
+    return Promise.resolve([...(this.fixtures.campaignsByAdAccount[adAccountId] ?? [])]);
   }
 
-  async listAdSets(campaignId: string): Promise<MetaAdSet[]> {
-    return [...(this.fixtures.adSetsByCampaign[campaignId] ?? [])];
+  listAdSets(campaignId: string): Promise<MetaAdSet[]> {
+    return Promise.resolve([...(this.fixtures.adSetsByCampaign[campaignId] ?? [])]);
   }
 
-  async listAds(adSetId: string): Promise<MetaAd[]> {
-    return [...(this.fixtures.adsByAdSet[adSetId] ?? [])];
+  listAds(adSetId: string): Promise<MetaAd[]> {
+    return Promise.resolve([...(this.fixtures.adsByAdSet[adSetId] ?? [])]);
   }
 
-  async readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
+  readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
     const key = `${scope.level}:${scope.id}`;
-    return (this.fixtures.insightsByScope[key] ?? []).filter(
+    const rows = (this.fixtures.insightsByScope[key] ?? []).filter(
       (row) => row.dateStart >= range.since && row.dateStop <= range.until
     );
+    return Promise.resolve([...rows]);
   }
 }
