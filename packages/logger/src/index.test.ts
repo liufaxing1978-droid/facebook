@@ -1,16 +1,14 @@
-import { Writable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { createLogger } from "./index";
 
 describe("createLogger", () => {
   it("redacts Meta secrets and nested token fields", () => {
     let output = "";
-    const stream = new Writable({
-      write(chunk, _encoding, callback) {
-        output += chunk.toString();
-        callback();
+    const stream = {
+      write(message: string) {
+        output += message;
       }
-    });
+    };
 
     const logger = createLogger({ stream });
     logger.info(
