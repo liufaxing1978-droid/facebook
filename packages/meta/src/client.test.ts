@@ -35,7 +35,9 @@ describe("MetaClient", () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const [input, init] = fetchImpl.mock.calls[0] ?? [];
-    const url = new URL(String(input));
+    const href = input instanceof URL ? input.href : typeof input === "string" ? input : input?.url;
+    expect(href).toBeDefined();
+    const url = new URL(href ?? "https://invalid.local");
     expect(url.origin).toBe("https://graph.facebook.com");
     expect(url.pathname).toBe("/v26.0/me/adaccounts");
     expect(url.searchParams.get("fields")).toBe("id,name");
