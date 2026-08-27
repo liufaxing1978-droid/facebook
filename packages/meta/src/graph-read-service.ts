@@ -1,6 +1,9 @@
 import { MetaClient } from "./client";
 import {
+  parseMetaAd,
   parseMetaAdAccount,
+  parseMetaAdSet,
+  parseMetaCampaign,
   type MetaAd,
   type MetaAdAccount,
   type MetaAdSet,
@@ -37,23 +40,29 @@ export class GraphMetaReadService implements MetaReadService {
   }
 
   listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
-    void adAccountId;
-    return Promise.reject(
-      new MetaClientError("META_API_ERROR", "Campaign reads are not available in P1 Task 3")
+    const id = this.requireParentId(adAccountId, "Ad Account");
+    return this.readCollection(
+      `${id}/campaigns`,
+      { fields: "id,name,objective,status,effective_status" },
+      parseMetaCampaign
     );
   }
 
   listAdSets(campaignId: string): Promise<MetaAdSet[]> {
-    void campaignId;
-    return Promise.reject(
-      new MetaClientError("META_API_ERROR", "Ad Set reads are not available in P1 Task 3")
+    const id = this.requireParentId(campaignId, "Campaign");
+    return this.readCollection(
+      `${id}/adsets`,
+      { fields: "id,campaign_id,name,status,effective_status,daily_budget,lifetime_budget" },
+      parseMetaAdSet
     );
   }
 
   listAds(adSetId: string): Promise<MetaAd[]> {
-    void adSetId;
-    return Promise.reject(
-      new MetaClientError("META_API_ERROR", "Ad reads are not available in P1 Task 3")
+    const id = this.requireParentId(adSetId, "Ad Set");
+    return this.readCollection(
+      `${id}/ads`,
+      { fields: "id,adset_id,name,status,effective_status,creative{id}" },
+      parseMetaAd
     );
   }
 
@@ -63,6 +72,14 @@ export class GraphMetaReadService implements MetaReadService {
     return Promise.reject(
       new MetaClientError("META_API_ERROR", "Insight reads are not available in P1 Task 3")
     );
+  }
+
+  private requireParentId(value: string, label: string): string {
+    const id = value.trim();
+    if (id.length === 0) {
+      throw new MetaClientError("META_API_ERROR", `${label} id must be non-empty`);
+    }
+    return id;
   }
 
   private async readCollection<T>(
