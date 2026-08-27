@@ -1,0 +1,14 @@
+{
+  "name": "@xst-meta/logger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "pino": "^9.9.0"
+  }
+}

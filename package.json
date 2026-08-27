@@ -1,0 +1,24 @@
+{
+  "name": "xst-meta",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test:unit": "vitest run --exclude 'tests/integration/**'",
+    "test:integration": "vitest run tests/integration",
+    "build": "turbo run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@prisma/client": "6.16.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.34.0",
+    "prisma": "6.16.0",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^3.2.4"
+  }
+}

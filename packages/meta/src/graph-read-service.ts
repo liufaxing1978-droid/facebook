@@ -1,0 +1,129 @@
+import { MetaClient } from "./client";
+import {
+  parseMetaAd,
+  parseMetaAdAccount,
+  parseMetaAdSet,
+  parseMetaCampaign,
+  parseMetaInsightRow,
+  type MetaAd,
+  type MetaAdAccount,
+  type MetaAdSet,
+  type MetaCampaign,
+  type MetaInsightRow
+} from "./domain";
+import { MetaClientError } from "./errors";
+import { assertPageAllowed, parseGraphCollection } from "./graph-envelope";
+import type { MetaDateRange, MetaInsightScope, MetaReadService } from "./services";
+
+export type GraphMetaReadServiceOptions = Readonly<{
+  maxPages?: number;
+}>;
+
+export class GraphMetaReadService implements MetaReadService {
+  private readonly maxPages: number;
+
+  constructor(
+    private readonly client: MetaClient,
+    options: GraphMetaReadServiceOptions = {}
+  ) {
+    this.maxPages = options.maxPages ?? 100;
+    if (!Number.isInteger(this.maxPages) || this.maxPages < 1) {
+      throw new MetaClientError("META_API_ERROR", "Meta Graph maxPages must be a positive integer");
+    }
+  }
+
+  listAdAccounts(): Promise<MetaAdAccount[]> {
+    return this.readCollection(
+      "me/adaccounts",
+      { fields: "id,name,account_status,currency,timezone_name" },
+      parseMetaAdAccount
+    );
+  }
+
+  async listCampaigns(adAccountId: string): Promise<MetaCampaign[]> {
+    const id = this.requireParentId(adAccountId, "Ad Account");
+    const result = await this.readCollection(
+      `${id}/campaigns`,
+      { fields: "id,name,objective,status,effective_status" },
+      parseMetaCampaign
+    );
+    return result;
+  }
+
+  async listAdSets(campaignId: string): Promise<MetaAdSet[]> {
+    const id = this.requireParentId(campaignId, "Campaign");
+    const result = await this.readCollection(
+      `${id}/adsets`,
+      { fields: "id,campaign_id,name,status,effective_status,daily_budget,lifetime_budget" },
+      parseMetaAdSet
+    );
+    return result;
+  }
+
+  async listAds(adSetId: string): Promise<MetaAd[]> {
+    const id = this.requireParentId(adSetId, "Ad Set");
+    const result = await this.readCollection(
+      `${id}/ads`,
+      { fields: "id,adset_id,name,status,effective_status,creative{id}" },
+      parseMetaAd
+    );
+    return result;
+  }
+
+  async readInsights(scope: MetaInsightScope, range: MetaDateRange): Promise<MetaInsightRow[]> {
+    const id = this.requireParentId(scope.id, "Insight scope");
+    const since = this.requireDate(range.since, "Insight since");
+    const until = this.requireDate(range.until, "Insight until");
+    const result = await this.readCollection(
+      `${id}/insights`,
+      {
+        fields: "date_start,date_stop,spend,impressions,reach,clicks,ctr,cpc,cpm",
+        level: scope.level,
+        time_range: JSON.stringify({ since, until }),
+        limit: "500"
+      },
+      parseMetaInsightRow
+    );
+    return result;
+  }
+
+  private requireParentId(value: string, label: string): string {
+    const id = value.trim();
+    if (id.length === 0) {
+      throw new MetaClientError("META_API_ERROR", `${label} id must be non-empty`);
+    }
+    return id;
+  }
+
+  private requireDate(value: string, label: string): string {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      throw new MetaClientError("META_API_ERROR", `${label} must use YYYY-MM-DD format`);
+    }
+    return value;
+  }
+
+  private async readCollection<T>(
+    path: string,
+    query: Readonly<Record<string, string>>,
+    itemParser: (input: unknown) => T
+  ): Promise<T[]> {
+    const result: T[] = [];
+    const seen = new Set<string>();
+    let pageNumber = 1;
+    let payload = await this.client.request<unknown>(path, { method: "GET", query });
+
+    while (true) {
+      const page = parseGraphCollection(payload, itemParser);
+      result.push(...page.items);
+
+      if (page.next === undefined) {
+        return result;
+      }
+
+      assertPageAllowed(page.next, seen, pageNumber + 1, this.maxPages);
+      seen.add(page.next.toString());
+      payload = await this.client.requestUrl<unknown>(page.next);
+      pageNumber += 1;
+    }
+  }
+}
