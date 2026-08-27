@@ -46,9 +46,11 @@ describe("assertPageAllowed", () => {
 describe("MetaClient.requestUrl", () => {
   it("follows only graph.facebook.com URLs and keeps access token server-side", async () => {
     const seen: string[] = [];
-    const fetchImpl: typeof fetch = async (input) => {
-      seen.push(String(input));
-      return new Response(JSON.stringify({ data: [] }), { status: 200 });
+    const fetchImpl: typeof fetch = (input) => {
+      const requestUrl =
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      seen.push(requestUrl);
+      return Promise.resolve(new Response(JSON.stringify({ data: [] }), { status: 200 }));
     };
 
     const client = new MetaClient({
