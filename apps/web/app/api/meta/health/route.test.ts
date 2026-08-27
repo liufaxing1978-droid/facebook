@@ -21,7 +21,9 @@ describe("GET /api/meta/health", () => {
     "sanitizes %s without raw Meta data, token, trace id or stack",
     async (code) => {
       const handler = createMetaHealthHandler(() =>
-        Promise.reject(new MetaClientError(code, "sensitive provider message", 403, 190))
+        Promise.reject(
+          new MetaClientError(code, "sensitive provider message", { status: 403, metaCode: 190 })
+        )
       );
 
       const response = await handler();
