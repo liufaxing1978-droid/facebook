@@ -27,7 +27,7 @@ describe("GET /api/meta/health", () => {
       );
 
       const response = await handler();
-      const body = await response.json();
+      const body: unknown = await response.json();
 
       expect(response.status).toBe(503);
       expect(body).toEqual({ status: "error", code });
